@@ -2,6 +2,7 @@ import cfscrape
 import json
 import time
 import colorama
+from datetime import datetime
 from bs4 import BeautifulSoup
 
 colorama.init()
@@ -12,6 +13,8 @@ POST = REQUESTS_MANAGER.post
 JSON_TO_TABLE = json.loads
 TABLE_TO_JSON = json.dumps
 COLOR = colorama.Fore
+
+LOGGING_WEBHOOK = 'WEBHOOK HERE'
 
 WEBHOOKS = [
     # You can add as many webhooks as u want, diving them with ","
@@ -36,8 +39,52 @@ LOGGING_COLORS = {
 }
 
 
-def log(logType, message):
-    print(LOGGING_COLORS[logType] + message)
+def log(logType, message, details):
+    logDate = str(datetime.now())
+
+    print(logDate + LOGGING_COLORS[logType] + ' [%s] ' %
+          (logType) + message + ' | ' + TABLE_TO_JSON(details) + COLOR.RESET)
+
+    logFile = open('logs.log', 'a+')
+    logFile.write(logDate + ' [%s] ' % (logType) +
+                  message + ' | ' + TABLE_TO_JSON(details) + '\n')
+    logFile.close()
+
+    detailsString = ''
+
+    for x in details:
+        detailsString += '`%s = %s`\n' % (str(x), details[x])
+
+    data = {
+        "content": None,
+        "embeds": [
+            {
+                "color": None,
+                "fields": [
+                    {
+                        "name": "LOG TYPE",
+                        "value": "`%s`" % (logType)
+                    },
+                    {
+                        "name": "LOG MESSAGE",
+                        "value": "`%s`" % (message)
+                    },
+                    {
+                        "name": "LOG DETAILS",
+                        "value": detailsString
+                    },
+                    {
+                        "name": "TIME",
+                        "value": "`%s`" % (logDate)
+                    }
+                ]
+            }
+        ],
+        "username": "Zalando Scraper Logs",
+        "avatar_url": "https://avatars.githubusercontent.com/u/1564818?s=280&v=4"
+    }
+
+    POST(LOGGING_WEBHOOK, json=data)
 
 
 def save_external_articles(content):
