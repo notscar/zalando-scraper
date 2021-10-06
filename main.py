@@ -7,20 +7,41 @@ REQUESTS_MANAGER = cfscrape.CloudflareScraper()
 GET = REQUESTS_MANAGER.get
 POST = REQUESTS_MANAGER.post
 JSON_TO_TABLE = json.loads
+TABLE_TO_JSON = json.dumps
 
 WEBHOOKS = [
-    'https://discord.com/api/webhooks/895077077273935933/p8EankULZliTMjEnZ7eRaBBCfPCj61qCZsbbj3QbE3oHIyn5tyglbT6s-Wuy_deNyszU'
+    'INSERT WEBHOOK HERE', # You can add as many webhooks as u want, diving them with "," 
 ]
 
 COUNTRY_LINKS = {
-    'IT' : 'https://www.zalando.it/release-calendar/sneakers-uomo/'
+    'IT' : 'https://www.zalando.it/release-calendar/sneakers-uomo/',
+    'UK' : 'https://www.zalando.co.uk/release-calendar/mens-shoes-sneakers/'
 }
 
 COUNTRY_BASE_URL = {
-    'IT' : 'https://www.zalando.it/'
+    'IT' : 'https://www.zalando.it/',
+    'UK' : 'https://www.zalando.co.uk/'
 }
 
-oldArticles = []
+def save_external_articles(content):
+  file = open('articles.json','w+')
+  file.write(TABLE_TO_JSON(content))
+  file.close()
+  return content
+
+def load_external_articles():
+  open('articles.json','a+')
+  file = open('articles.json','r')
+  fileContent = file.read()
+  if len(fileContent) < 2:
+    save_external_articles([])
+    return []
+  try:
+    file.close()
+    return JSON_TO_TABLE(fileContent)
+  except:
+    save_external_articles([])
+    return []
 
 def validate_country(countryCode):
     return not (COUNTRY_LINKS[countryCode] == None)
@@ -96,7 +117,7 @@ def compare_articles(articles):
 
                 if found == False: 
                     articlesToReturn.append(article)
-            
+
             return articlesToReturn
 
 def get_product_stock(link):
@@ -113,7 +134,6 @@ def get_product_stock(link):
         })
     
     return sizeStockArray
-        
 
 def send_message(content):
 
@@ -188,20 +208,22 @@ def send_message(content):
           "avatar_url": "https://avatars.githubusercontent.com/u/1564818?s=280&v=4"
         }
         for webhook in WEBHOOKS:
-
+          
             POST(webhook,json=data)
+
+oldArticles = load_external_articles()
 
 def main():
     global oldArticles
-    country = 'IT'
+    country = 'UK'
     articles = adjust_articles_info(filter_coming_soon(filter_articles(filter_json(get_page_data(country)))),country)
     newArticles = compare_articles(articles)
     send_message(newArticles)
+    save_external_articles(articles)
     oldArticles = articles
-    
 
 if __name__ == '__main__':
-    while True:
-        main()
-        time.sleep(2)
+  while True:
+      main()
+      time.sleep(2)
 
