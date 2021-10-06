@@ -76,3 +76,8 @@ The script itself it's very light-weight takes an average of 60 MB of RAM, and l
 
 - [@NotScar](https://github.com/NotScar) - Idea & Initial work
 
+## 📸 Screenshots
+
+![DWS](https://i.imgur.com/7vnSHfe.png)
+![DWS](https://i.imgur.com/RPaGxgQ.png)
+![DWS](https://i.imgur.com/cpGlxUd.png)
