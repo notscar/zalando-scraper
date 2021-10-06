@@ -68,7 +68,7 @@ The script itself it's very light-weight takes an average of 60 MB of RAM, and l
 - [BeautifulSoup 4](https://beautiful-soup-4.readthedocs.io/en/latest/) - Extraction of content from HTML Pages
 
 ## 📒 TODO
-- [ ] Extend Logs to external file and discord webhook
+- [X] Extend Logs to external file and discord webhook
 - [ ] Allow the loop to use multiple countries at once without overlapping articles 
 - [ ] Extend the script to auto-checkout articles with selenium
 
