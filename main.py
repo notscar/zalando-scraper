@@ -14,11 +14,13 @@ JSON_TO_TABLE = json.loads
 TABLE_TO_JSON = json.dumps
 COLOR = colorama.Fore
 
-LOGGING_WEBHOOK = 'WEBHOOK HERE'
+DISCORD_BASIC_LOGGING = False
+
+LOGGING_WEBHOOK = 'https://discord.com/api/webhooks/895430214337826857/45aGFTs_MJLmRT7Vtv23BDEGXxO8iwsoCoFlRB5OAVvsK9y2gv3mPCFIEXLA9FNIiYQT'
 
 WEBHOOKS = [
     # You can add as many webhooks as u want, diving them with ","
-    'WEBHOOK HERE',
+    'https://discord.com/api/webhooks/895422954404466790/UZZmbfvqnXjZCTqPc4Dt1vHuWifW4BD4IA6sPvPXXCiUj_SM0R6L56I31XB2r6R9POpb',
 ]
 
 COUNTRY_LINKS = {
@@ -42,15 +44,24 @@ LOGGING_COLORS = {
 def log(logType, message, details):
     logDate = str(datetime.now())
 
-    print(logDate + LOGGING_COLORS[logType] + ' [%s] ' %
-          (logType) + message + ' | ' + TABLE_TO_JSON(details) + COLOR.RESET)
-
     logFile = open('logs.log', 'a+')
-    logFile.write(logDate + ' [%s] ' % (logType) +
-                  message + ' | ' + TABLE_TO_JSON(details) + '\n')
+
+    if len(details) == 0:
+        logFile.write(logDate + ' [%s] ' % (logType) + message + '\n')
+        print(logDate + LOGGING_COLORS[logType] + ' [%s] ' %
+              (logType) + message + COLOR.RESET)
+    else:
+        logFile.write(logDate + ' [%s] ' % (logType) +
+                      message + ' | ' + TABLE_TO_JSON(details) + '\n')
+        print(logDate + LOGGING_COLORS[logType] + ' [%s] ' %
+              (logType) + message + ' | ' + TABLE_TO_JSON(details) + COLOR.RESET)
+
     logFile.close()
 
     detailsString = ''
+
+    if (logType == 'LOG') and (DISCORD_BASIC_LOGGING == False):
+        return
 
     for x in details:
         detailsString += '`%s = %s`\n' % (str(x), details[x])
@@ -83,6 +94,9 @@ def log(logType, message, details):
         "username": "Zalando Scraper Logs",
         "avatar_url": "https://avatars.githubusercontent.com/u/1564818?s=280&v=4"
     }
+
+    if len(details) == 0:
+        data['embeds'][0]['fields'].remove(data['embeds'][0]['fields'][2])
 
     POST(LOGGING_WEBHOOK, json=data)
 
@@ -120,7 +134,9 @@ def get_page_data(countryCode):
         if response.status_code == 200:
             return response.content
         else:
+            log('ERROR','Error while retrieving page', {'statusCode' : response.status_code})
             return {'error': 'Invalid Status Code', 'status_code': response.status_code}
+    log('ERROR','Invalid Country (get_page_data)',{'countryCode' : countryCode})
     return {'error': 'Invalid Country'}
 
 
@@ -286,6 +302,8 @@ def send_message(content):
         }
         for webhook in WEBHOOKS:
 
+            log('LOG', 'Article Message Sent', {
+                'WEBHOOK': 'REDACTED', 'ARTICLE-ID': article['zalandoId']})
             POST(webhook, json=data)
 
 
@@ -304,6 +322,7 @@ def main():
 
 
 if __name__ == '__main__':
+    log('INFO', 'Zalando Scraper has been started', {})
     while True:
         main()
         time.sleep(2)
