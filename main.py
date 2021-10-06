@@ -16,11 +16,11 @@ COLOR = colorama.Fore
 
 DISCORD_BASIC_LOGGING = False
 
-LOGGING_WEBHOOK = 'https://discord.com/api/webhooks/895430214337826857/45aGFTs_MJLmRT7Vtv23BDEGXxO8iwsoCoFlRB5OAVvsK9y2gv3mPCFIEXLA9FNIiYQT'
+LOGGING_WEBHOOK = 'INSERT WEBHOOK'
 
 WEBHOOKS = [
     # You can add as many webhooks as u want, diving them with ","
-    'https://discord.com/api/webhooks/895422954404466790/UZZmbfvqnXjZCTqPc4Dt1vHuWifW4BD4IA6sPvPXXCiUj_SM0R6L56I31XB2r6R9POpb',
+    'INSERT WEBHOOK',
 ]
 
 COUNTRY_LINKS = {
@@ -134,9 +134,11 @@ def get_page_data(countryCode):
         if response.status_code == 200:
             return response.content
         else:
-            log('ERROR','Error while retrieving page', {'statusCode' : response.status_code})
+            log('ERROR', 'Error while retrieving page',
+                {'statusCode': response.status_code})
             return {'error': 'Invalid Status Code', 'status_code': response.status_code}
-    log('ERROR','Invalid Country (get_page_data)',{'countryCode' : countryCode})
+    log('ERROR', 'Invalid Country (get_page_data)',
+        {'countryCode': countryCode})
     return {'error': 'Invalid Country'}
 
 
@@ -303,7 +305,7 @@ def send_message(content):
         for webhook in WEBHOOKS:
 
             log('LOG', 'Article Message Sent', {
-                'WEBHOOK': 'REDACTED', 'ARTICLE-ID': article['zalandoId']})
+                'WEBHOOK': webhook, 'ARTICLE-ID': article['zalandoId']})
             POST(webhook, json=data)
 
 
