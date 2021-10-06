@@ -1,50 +1,70 @@
 import cfscrape
-from bs4 import BeautifulSoup
 import json
 import time
+import colorama
+from bs4 import BeautifulSoup
+
+colorama.init()
 
 REQUESTS_MANAGER = cfscrape.CloudflareScraper()
 GET = REQUESTS_MANAGER.get
 POST = REQUESTS_MANAGER.post
 JSON_TO_TABLE = json.loads
 TABLE_TO_JSON = json.dumps
+COLOR = colorama.Fore
 
 WEBHOOKS = [
-    'INSERT WEBHOOK HERE', # You can add as many webhooks as u want, diving them with "," 
+    # You can add as many webhooks as u want, diving them with ","
+    'WEBHOOK HERE',
 ]
 
 COUNTRY_LINKS = {
-    'IT' : 'https://www.zalando.it/release-calendar/sneakers-uomo/',
-    'UK' : 'https://www.zalando.co.uk/release-calendar/mens-shoes-sneakers/'
+    'IT': 'https://www.zalando.it/release-calendar/sneakers-uomo/',
+    'UK': 'https://www.zalando.co.uk/release-calendar/mens-shoes-sneakers/'
 }
 
 COUNTRY_BASE_URL = {
-    'IT' : 'https://www.zalando.it/',
-    'UK' : 'https://www.zalando.co.uk/'
+    'IT': 'https://www.zalando.it/',
+    'UK': 'https://www.zalando.co.uk/'
 }
 
+LOGGING_COLORS = {
+    "INFO": COLOR.CYAN,
+    "LOG": COLOR.BLUE,
+    "WARNING": COLOR.YELLOW,
+    "ERROR": COLOR.RED,
+}
+
+
+def log(logType, message):
+    print(LOGGING_COLORS[logType] + message)
+
+
 def save_external_articles(content):
-  file = open('articles.json','w+')
-  file.write(TABLE_TO_JSON(content))
-  file.close()
-  return content
+    file = open('articles.json', 'w+')
+    file.write(TABLE_TO_JSON(content))
+    file.close()
+    return content
+
 
 def load_external_articles():
-  open('articles.json','a+')
-  file = open('articles.json','r')
-  fileContent = file.read()
-  if len(fileContent) < 2:
-    save_external_articles([])
-    return []
-  try:
-    file.close()
-    return JSON_TO_TABLE(fileContent)
-  except:
-    save_external_articles([])
-    return []
+    open('articles.json', 'a+')
+    file = open('articles.json', 'r')
+    fileContent = file.read()
+    if len(fileContent) < 2:
+        save_external_articles([])
+        return []
+    try:
+        file.close()
+        return JSON_TO_TABLE(fileContent)
+    except:
+        save_external_articles([])
+        return []
+
 
 def validate_country(countryCode):
     return not (COUNTRY_LINKS[countryCode] == None)
+
 
 def get_page_data(countryCode):
 
@@ -53,11 +73,12 @@ def get_page_data(countryCode):
         if response.status_code == 200:
             return response.content
         else:
-            return { 'error' : 'Invalid Status Code', 'status_code' : response.status_code}
-    return { 'error' : 'Invalid Country'}
+            return {'error': 'Invalid Status Code', 'status_code': response.status_code}
+    return {'error': 'Invalid Country'}
+
 
 def filter_json(content):
-    bs = BeautifulSoup(content,'html.parser')
+    bs = BeautifulSoup(content, 'html.parser')
     foundScripts = bs.find_all('script')
 
     for script in foundScripts:
@@ -68,10 +89,12 @@ def filter_json(content):
                 script = script[:-1]
                 return JSON_TO_TABLE(script)['feed']['items']
 
+
 def filter_articles(content):
     for articlesList in content:
         if articlesList['id'] == 'products':
             return articlesList['articles']
+
 
 def filter_coming_soon(content):
     comingSoonList = []
@@ -79,6 +102,7 @@ def filter_coming_soon(content):
         if article['availability']['comingSoon'] == True:
             comingSoonList.append(article)
     return comingSoonList
+
 
 def adjust_articles_info(content, countryCode):
     adjustedArticlesList = []
@@ -88,16 +112,19 @@ def adjust_articles_info(content, countryCode):
         rDate = rSplit[0].split('-')
         rTime = rSplit[1]
         articleInfo['zalandoId'] = article['id']
-        articleInfo['releaseDate'] = '%s-%s-%s %s' % (rDate[2],rDate[1],rDate[0],rTime)
+        articleInfo['releaseDate'] = '%s-%s-%s %s' % (
+            rDate[2], rDate[1], rDate[0], rTime)
         articleInfo['productName'] = article['brand'] + ' ' + article['name']
         articleInfo['originalPrice'] = article['price']['original']
         articleInfo['currentPrice'] = article['price']['current']
-        articleInfo['link'] = "%s%s.html" % (COUNTRY_BASE_URL[countryCode],article['urlKey'])
+        articleInfo['link'] = "%s%s.html" % (
+            COUNTRY_BASE_URL[countryCode], article['urlKey'])
         articleInfo['imageUrl'] = article['imageUrl']
 
         adjustedArticlesList.append(articleInfo)
-    
+
     return adjustedArticlesList
+
 
 def compare_articles(articles):
     if len(oldArticles) == 0:
@@ -115,25 +142,28 @@ def compare_articles(articles):
                     if article['zalandoId'] == article_['zalandoId']:
                         found = True
 
-                if found == False: 
+                if found == False:
                     articlesToReturn.append(article)
 
             return articlesToReturn
 
+
 def get_product_stock(link):
     response = GET(link)
-    bs = BeautifulSoup(response.content,'html.parser')
-    sizeArray = JSON_TO_TABLE(bs.find("script", {'id' : 'z-vegas-pdp-props'}).contents[0][9:-3])['model']['articleInfo']['units']
+    bs = BeautifulSoup(response.content, 'html.parser')
+    sizeArray = JSON_TO_TABLE(bs.find("script", {
+                              'id': 'z-vegas-pdp-props'}).contents[0][9:-3])['model']['articleInfo']['units']
 
     sizeStockArray = []
     for x in sizeArray:
         sizeStockArray.append({
-            'size' : x['size']['local'],
-            'sizeCountry' : x['size']['local_type'],
-            'stock' : x['stock']
+            'size': x['size']['local'],
+            'sizeCountry': x['size']['local_type'],
+            'stock': x['stock']
         })
-    
+
     return sizeStockArray
+
 
 def send_message(content):
 
@@ -153,77 +183,80 @@ def send_message(content):
             totalStock += size['stock']
 
         data = {
-          "content": None,
-          "embeds": [
-            {
-              "description": "[%s](%s)" % (article['productName'],article['link']),
-              "color": None,
-              "fields": [
+            "content": None,
+            "embeds": [
                 {
-                  "name": "Price",
-                  "value": article['currentPrice'],
-                  "inline": True
+                    "description": "[%s](%s)" % (article['productName'], article['link']),
+                    "color": None,
+                    "fields": [
+                        {
+                            "name": "Price",
+                            "value": article['currentPrice'],
+                            "inline": True
+                        },
+                        {
+                            "name": "Release Date",
+                            "value": article['releaseDate'],
+                            "inline": True
+                        },
+                        {
+                            "name": "Total Stock",
+                            "value": totalStock,
+                            "inline": True
+                        }
+                    ],
+                    "author": {
+                        "name": "Sneaker Drop",
+                        "url": article['link']
+                    },
+                    "thumbnail": {
+                        "url": article['imageUrl']
+                    }
                 },
                 {
-                  "name": "Release Date",
-                  "value": article['releaseDate'],
-                  "inline": True
-                },
-                {
-                  "name": "Total Stock",
-                  "value": totalStock,
-                  "inline": True
+                    "color": None,
+                    "fields": [
+                        {
+                            "name": "Sizes",
+                            "value": sizeString,
+                            "inline": True
+                        },
+                        {
+                            "name": "Country",
+                            "value": countryString,
+                            "inline": True
+                        },
+                        {
+                            "name": "Stock",
+                            "value": stockString,
+                            "inline": True
+                        }
+                    ]
                 }
-              ],
-              "author": {
-                "name": "Sneaker Drop",
-                "url": article['link']
-              },
-              "thumbnail": {
-                "url": article['imageUrl']
-              }
-            },
-            {
-              "color": None,
-              "fields": [
-                {
-                  "name": "Sizes",
-                  "value": sizeString,
-                  "inline": True
-                },
-                {
-                  "name": "Country",
-                  "value": countryString,
-                  "inline": True
-                },
-                {
-                  "name": "Stock",
-                  "value": stockString,
-                  "inline": True
-                }
-              ]
-            }
-          ],
-          "username": "᲼",
-          "avatar_url": "https://avatars.githubusercontent.com/u/1564818?s=280&v=4"
+            ],
+            "username": "᲼",
+            "avatar_url": "https://avatars.githubusercontent.com/u/1564818?s=280&v=4"
         }
         for webhook in WEBHOOKS:
-          
-            POST(webhook,json=data)
+
+            POST(webhook, json=data)
+
 
 oldArticles = load_external_articles()
 
+
 def main():
     global oldArticles
-    country = 'UK'
-    articles = adjust_articles_info(filter_coming_soon(filter_articles(filter_json(get_page_data(country)))),country)
+    country = 'IT'
+    articles = adjust_articles_info(filter_coming_soon(
+        filter_articles(filter_json(get_page_data(country)))), country)
     newArticles = compare_articles(articles)
     send_message(newArticles)
     save_external_articles(articles)
     oldArticles = articles
 
-if __name__ == '__main__':
-  while True:
-      main()
-      time.sleep(2)
 
+if __name__ == '__main__':
+    while True:
+        main()
+        time.sleep(2)
