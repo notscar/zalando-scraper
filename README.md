@@ -57,6 +57,10 @@ py main.py
 
 The script must be used with Python 3.x, preferably Python 3.9
 
+## 🛠 Extra
+
+Discord sent articles logs can be enabled / disabled by changing the variable `DISCORD_BASIC_LOGGING` 
+
 ## 🚀 Deployment <a name = "deployment"></a>
 
 The script itself it's very light-weight takes an average of 60 MB of RAM, and less than 2 MBPS
