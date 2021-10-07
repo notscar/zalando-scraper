@@ -16,11 +16,11 @@ COLOR = colorama.Fore
 
 DISCORD_BASIC_LOGGING = False
 
-LOGGING_WEBHOOK = 'INSERT WEBHOOK'
+LOGGING_WEBHOOK = 'https://discord.com/api/webhooks/895430214337826857/45aGFTs_MJLmRT7Vtv23BDEGXxO8iwsoCoFlRB5OAVvsK9y2gv3mPCFIEXLA9FNIiYQT'
 
 WEBHOOKS = [
     # You can add as many webhooks as u want, diving them with ","
-    'INSERT WEBHOOK',
+    'https://discord.com/api/webhooks/895422954404466790/UZZmbfvqnXjZCTqPc4Dt1vHuWifW4BD4IA6sPvPXXCiUj_SM0R6L56I31XB2r6R9POpb',
 ]
 
 COUNTRY_LINKS = {
@@ -216,8 +216,11 @@ def compare_articles(articles):
 def get_product_stock(link):
     response = GET(link)
     bs = BeautifulSoup(response.content, 'html.parser')
-    sizeArray = JSON_TO_TABLE(bs.find("script", {
-                              'id': 'z-vegas-pdp-props'}).contents[0][9:-3])['model']['articleInfo']['units']
+    sizeArray = []
+    try:
+        sizeArray = JSON_TO_TABLE(bs.find("script", {'id': 'z-vegas-pdp-props'}).contents[0][9:-3])['model']['articleInfo']['units']
+    except:
+        log('ERROR','Could not retrieve model units and sizes',{link : link})
 
     sizeStockArray = []
     for x in sizeArray:
@@ -302,6 +305,11 @@ def send_message(content):
             "username": "᲼",
             "avatar_url": "https://avatars.githubusercontent.com/u/1564818?s=280&v=4"
         }
+
+        if len(stocks) == 0:
+            data['embeds'].remove(data['embeds'][1])
+            data['embeds'][0]['fields'][2]['value'] = 'UNKNOWN'
+
         for webhook in WEBHOOKS:
 
             log('LOG', 'Article Message Sent', {
