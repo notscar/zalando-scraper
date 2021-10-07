@@ -19,6 +19,10 @@
     <br> 
 </p>
 
+## ⚠ ATTENTION
+
+After 2 hours of the complete release of `zalando-scraper`, zalando team found out the secret sauce to find product stocks quantity! So it will probably not work anymore except if it's a temporary change for their pages.
+
 ## 📝 Table of Contents
 
 - [About](#about)
