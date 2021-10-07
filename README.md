@@ -21,7 +21,7 @@
 
 ## ⚠ ATTENTION
 
-After 2 hours of the complete release of `zalando-scraper`, zalando team found out the secret sauce to find product stocks quantity! So it will probably not work anymore except if it's a temporary change for their pages.
+After 2 hours of the complete release of `zalando-scraper`, zalando team found out the secret sauce to find product stocks quantity! So it will probably not work anymore except if it's a temporary change for their pages. [Click here](after_update_screenshot) to see what the release message looks like after their patch!
 
 ## 📝 Table of Contents
 
@@ -89,3 +89,5 @@ The script itself it's very light-weight takes an average of 60 MB of RAM, and l
 ![DWS](https://i.imgur.com/7vnSHfe.png)
 ![DWS](https://i.imgur.com/RPaGxgQ.png)
 ![DWS](https://i.imgur.com/cpGlxUd.png)
+<a name = "after_update_screenshot"></a>
+![AUDWS](https://i.imgur.com/Hrs092S.png)
