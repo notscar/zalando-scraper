@@ -21,7 +21,7 @@
 
 ## ⚠ ATTENTION
 
-After 2 hours of the complete release of `zalando-scraper`, zalando team found out the secret sauce to find product stocks quantity! So it will probably not work anymore except if it's a temporary change for their pages. [Click here](after_update_screenshot) to see what the release message looks like after their patch!
+After 2 hours of the complete release of `zalando-scraper`, zalando team found out the secret sauce to find product stocks quantity! So it will probably not work anymore except if it's a temporary change for their pages. [Click here](#after_update_screenshot) to see what the release message looks like after their patch!
 
 ## 📝 Table of Contents
 
