@@ -220,7 +220,7 @@ def get_product_stock(link):
     try:
         sizeArray = JSON_TO_TABLE(bs.find("script", {'id': 'z-vegas-pdp-props'}).contents[0][9:-3])['model']['articleInfo']['units']
     except:
-        log('ERROR','Could not retrieve model units and sizes',{link : link})
+        log('ERROR','Could not retrieve model units and sizes',{'URL' : link})
 
     sizeStockArray = []
     for x in sizeArray:
